@@ -9,6 +9,7 @@ namespace skeeks\cms\shopDiscountCoupon;
 
 use skeeks\cms\helpers\RequestResponse;
 use skeeks\cms\shop\models\ShopBuyer;
+use skeeks\cms\shop\models\ShopDiscountCoupon;
 use skeeks\cms\shop\models\ShopFuser;
 use skeeks\cms\shop\models\ShopOrder;
 use yii\base\Exception;
@@ -23,7 +24,7 @@ use yii\helpers\Json;
  */
 class ShopDiscountCouponWidget extends Widget
 {
-    public static $autoIdPrefix = 'shopCheckout';
+    public static $autoIdPrefix = 'ShopDiscountCouponWidget';
 
     public $viewFile = 'default';
 
@@ -31,9 +32,9 @@ class ShopDiscountCouponWidget extends Widget
     public $clientOptions = [];
 
     public $btnSubmitWrapperOptions     = [];
-    public $btnSubmitName               = '';
+    public $btnSubmitName               = 'Получить скидку';
     public $btnSubmitOptions            = [
-        'class' => 'btn btn-primary',
+        'class' => 'btn btn-gray btn-block',
         'type' => 'submit',
     ];
 
@@ -80,7 +81,10 @@ class ShopDiscountCouponWidget extends Widget
     public function run()
     {
         $rr = new RequestResponse();
-        $errors = [];
+
+        $shopDiscountCoupon = new \skeeks\cms\shop\models\ShopDiscountCoupon();
+        $errorMessage = "";
+        $successMessage = "";
 
         if ($post = \Yii::$app->request->post())
         {
@@ -103,66 +107,49 @@ class ShopDiscountCouponWidget extends Widget
             }
         }
 
-        if ($rr->isRequestPjaxPost())
+        if ($rr->isRequestPjaxPost() && \Yii::$app->request->post($this->id))
         {
-            if (!\Yii::$app->request->post($this->notSubmitParam))
+            try
             {
-                if ($this->shopFuser->validate() && $this->shopBuyer->validate() && $this->shopBuyer->relatedPropertiesModel->validate())
+                $shopDiscountCoupon->load(\Yii::$app->request->post());
+
+                if (!$shopDiscountCoupon->coupon)
                 {
-                    if ($this->shopBuyer->isNewRecord)
-                    {
-                        if (!$this->shopBuyer->save())
-                        {
-                            throw new Exception('Not save buyer');
-                        }
-                    }
-
-                    if (!$this->shopBuyer->relatedPropertiesModel->save())
-                    {
-                        throw new Exception('Not save buyer data');
-                    }
-
-                    $this->shopFuser->buyer_id = $this->shopBuyer->id;
-
-                    $newOrder = ShopOrder::createOrderByFuser($this->shopFuser);
-                    $orderUrl = $newOrder->publicUrl;
-                    $this->view->registerJs(<<<JS
-location.href='{$orderUrl}';
-JS
-);
-
-                } else
-                {
-                    /*print_r($this->shopFuser->firstErrors);
-                    print_r($this->shopBuyer->firstErrors);
-                    print_r($this->shopBuyer->relatedPropertiesModel->firstErrors);*/
+                    throw new Exception("Некорректный купон");
                 }
+
+                $applyShopDiscountCoupon = ShopDiscountCoupon::find()
+                    ->where(['coupon' => $shopDiscountCoupon->coupon])
+                    //->andWhere(['is_active' => 1])
+                    ->one();
+
+                if (!$applyShopDiscountCoupon) {
+                    throw new Exception("Купон не существует или неактивен");
+                }
+
+                $discount_coupons = $this->shopFuser->discount_coupons;
+                $discount_coupons[] = $applyShopDiscountCoupon->id;
+                array_unique($discount_coupons);
+                $this->shopFuser->discount_coupons = $discount_coupons;
+                $this->shopFuser->save();
+                $successMessage = "Купон успешно применен";
+
+                $shopDiscountCoupon->coupon = '';
+
+            } catch (\Exception $e)
+            {
+                $errorMessage = $e->getMessage();
             }
+
         }
 
-        return $this->render($this->viewFile);
+        return $this->render($this->viewFile, [
+            'shopDiscountCoupon' => $shopDiscountCoupon,
+            'errorMessage' => $errorMessage,
+            'successMessage' => $successMessage
+        ]);
     }
 
-
-    /**
-     * @return bool
-     */
-    public function getShopIsReady()
-    {
-        $this->shopErrors = [];
-
-        if (!\Yii::$app->shop->shopPersonTypes)
-        {
-            $this->shopErrors[] = 'Не заведены типы профилей покупателей';
-        }
-
-        if ($this->shopErrors)
-        {
-            return false;
-        }
-
-        return true;
-    }
 
     /**
      * @return string
@@ -173,19 +160,18 @@ JS
     }
 
 
-
     static public $isRegisteredTranslations = false;
 
     static public function registerTranslations()
     {
         if (self::$isRegisteredTranslations === false)
         {
-            \Yii::$app->i18n->translations['skeeks/shop-checkout'] = [
+            \Yii::$app->i18n->translations['skeeks/shop-dicount-coupon'] = [
                 'class' => 'yii\i18n\PhpMessageSource',
                 'sourceLanguage' => 'en',
-                'basePath' => '@skeeks/cms/shopCheckoutSimple/messages',
+                'basePath' => '@skeeks/cms/shopDiscountCoupon/messages',
                 'fileMap' => [
-                    'skeeks/shop-checkout' => 'main.php',
+                    'skeeks/shop-dicount-coupon' => 'main.php',
                 ],
             ];
             self::$isRegisteredTranslations = true;

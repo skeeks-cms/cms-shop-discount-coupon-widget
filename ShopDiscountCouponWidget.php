@@ -86,26 +86,6 @@ class ShopDiscountCouponWidget extends Widget
         $errorMessage = "";
         $successMessage = "";
 
-        if ($post = \Yii::$app->request->post())
-        {
-            $this->shopFuser->load($post);
-            if (!$this->shopFuser->save())
-            {
-                \Yii::error("Error widget: " . Json::encode($this->shopFuser->errors), static::class);
-            }
-        }
-
-        $this->shopBuyer = $this->shopFuser->personType->createModelShopBuyer();
-
-        $shopBuyer = $this->shopBuyer;
-        if ($shopBuyer)
-        {
-            if ($post = \Yii::$app->request->post())
-            {
-                $this->shopBuyer->load($post);
-                $this->shopBuyer->relatedPropertiesModel->load($post);
-            }
-        }
 
         if ($rr->isRequestPjaxPost() && \Yii::$app->request->post($this->id))
         {
@@ -132,6 +112,7 @@ class ShopDiscountCouponWidget extends Widget
                 array_unique($discount_coupons);
                 $this->shopFuser->discount_coupons = $discount_coupons;
                 $this->shopFuser->save();
+                $this->shopFuser->recalculate()->save();
                 $successMessage = "Купон успешно применен";
 
                 $shopDiscountCoupon->coupon = '';

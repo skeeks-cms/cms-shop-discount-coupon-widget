@@ -32,25 +32,14 @@ class ShopDiscountCouponWidget extends Widget
     public $clientOptions = [];
 
     public $btnSubmitWrapperOptions     = [];
-    public $btnSubmitName               = 'Получить скидку';
+    public $btnSubmitName               = '';
+    public $shopFuser                   = '';
+
     public $btnSubmitOptions            = [
         'class' => 'btn btn-gray btn-block',
         'type' => 'submit',
     ];
 
-    /**
-     * @var ShopFuser
-     */
-    public $shopFuser = null;
-
-    /**
-     * @var ShopBuyer
-     */
-    public $shopBuyer = null;
-
-    public $shopErrors = [];
-
-    public $notSubmitParam = 'sx-not-submit';
 
     public function init()
     {
@@ -64,71 +53,21 @@ class ShopDiscountCouponWidget extends Widget
             $this->shopFuser = \Yii::$app->shop->shopFuser;
             $this->shopFuser->loadDefaultValues();
         }
-        //Покупателя никогда нет
-        $this->shopFuser->buyer_id = null;
 
         $this->clientOptions = ArrayHelper::merge($this->clientOptions, [
+            'id'        => $this->id,
             'formid'    => $this->formId,
-            'notsubmit' => $this->notSubmitParam,
         ]);
 
         if (!$this->btnSubmitName)
         {
-            $this->btnSubmitName = \Yii::t('skeeks/shop-checkout', 'Submit');
+            $this->btnSubmitName = \Yii::t('skeeks/shop-dicount-coupon', 'Get a discount');
         }
     }
 
     public function run()
     {
-        $rr = new RequestResponse();
-
-        $shopDiscountCoupon = new \skeeks\cms\shop\models\ShopDiscountCoupon();
-        $errorMessage = "";
-        $successMessage = "";
-
-
-        if ($rr->isRequestPjaxPost() && \Yii::$app->request->post($this->id))
-        {
-            try
-            {
-                $shopDiscountCoupon->load(\Yii::$app->request->post());
-
-                if (!$shopDiscountCoupon->coupon)
-                {
-                    throw new Exception("Некорректный купон");
-                }
-
-                $applyShopDiscountCoupon = ShopDiscountCoupon::find()
-                    ->where(['coupon' => $shopDiscountCoupon->coupon])
-                    //->andWhere(['is_active' => 1])
-                    ->one();
-
-                if (!$applyShopDiscountCoupon) {
-                    throw new Exception("Купон не существует или неактивен");
-                }
-
-                $discount_coupons = $this->shopFuser->discount_coupons;
-                $discount_coupons[] = $applyShopDiscountCoupon->id;
-                array_unique($discount_coupons);
-                $this->shopFuser->discount_coupons = $discount_coupons;
-                $this->shopFuser->save();
-                $this->shopFuser->recalculate()->save();
-                $successMessage = "Купон успешно применен";
-
-                $shopDiscountCoupon->coupon = '';
-
-            } catch (\Exception $e)
-            {
-                $errorMessage = $e->getMessage();
-            }
-
-        }
-
-        return $this->render($this->viewFile, [
-            'shopDiscountCoupon' => $shopDiscountCoupon,
-            'errorMessage' => $errorMessage,
-            'successMessage' => $successMessage
-        ]);
+        return $this->render($this->viewFile);
     }
 
 

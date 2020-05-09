@@ -10,7 +10,7 @@ namespace skeeks\cms\shopDiscountCoupon;
 use skeeks\cms\helpers\RequestResponse;
 use skeeks\cms\shop\models\ShopBuyer;
 use skeeks\cms\shop\models\ShopDiscountCoupon;
-use skeeks\cms\shop\models\ShopFuser;
+use skeeks\cms\shop\models\shopUser;
 use skeeks\cms\shop\models\ShopOrder;
 use yii\base\Exception;
 use yii\base\Widget;
@@ -33,7 +33,7 @@ class ShopDiscountCouponWidget extends Widget
 
     public $btnSubmitWrapperOptions     = [];
     public $btnSubmitName               = '';
-    public $shopFuser                   = '';
+    public $shopUser                   = '';
 
     public $btnSubmitOptions            = [
         'class' => 'btn btn-gray btn-block',
@@ -48,10 +48,10 @@ class ShopDiscountCouponWidget extends Widget
 
         $this->options['id'] = $this->id;
 
-        if (!$this->shopFuser)
+        if (!$this->shopUser)
         {
-            $this->shopFuser = \Yii::$app->shop->shopFuser;
-            $this->shopFuser->loadDefaultValues();
+            $this->shopUser = \Yii::$app->shop->shopUser;
+            $this->shopUser->loadDefaultValues();
         }
 
         $this->clientOptions = ArrayHelper::merge($this->clientOptions, [

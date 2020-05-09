@@ -11,20 +11,21 @@
 /* @var $successMessage string */
 /* @var $errorMessage string */
 $widget     = $this->context;
-$shopFuser  = $widget->shopFuser;
+$shopUser  = $widget->shopUser;
 $clientOptions = \yii\helpers\Json::encode($widget->clientOptions);
 ?>
 <?= \yii\helpers\Html::beginTag('div', $widget->options); ?>
 
-    <? if ($shopFuser->discountCoupons) : ?>
+    <? if ($shopUser->discountCoupons) : ?>
         <ul>
-        <? foreach ($shopFuser->discountCoupons as $discountCoupon) : ?>
+        <? foreach ($shopUser->discountCoupons as $discountCoupon) : ?>
             <li>
                 <a href='#' title='<?= $discountCoupon->description; ?> <?= $discountCoupon->shopDiscount->name; ?>'>
                     <?= $discountCoupon->coupon; ?>
                 </a>
                 <a href='#' title='<?= \Yii::t('skeeks/shop-dicount-coupon', 'Remove coupon'); ?>' class="pull-right" onclick="sx.Shop.removeDiscountCoupon(<?= $discountCoupon->id; ?>); return false;">
-                    <i class="glyphicon glyphicon-remove"></i>
+                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times-circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-times-circle fa-w-16" onclick="sx.Shop.removeBasket('868'); return false;" style="cursor: pointer; width: 12px;height: 12px;transform-origin: 0.625em 0.5625em;overflow: visible;color: gray; margin-top: -13px;">
+                                                    <g transform="translate(256 256)" class=""><g transform="translate(64, 32)  scale(1, 1)  rotate(0 0 0)" class=""><path fill="currentColor" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z" transform="translate(-256 -256)" class=""></path></g></g></svg>
                 </a>
             </li>
         <? endforeach; ?>
@@ -118,21 +119,21 @@ JS
         <?= \yii\helpers\Html::endTag('div'); ?>
     </form>
 
-        <? \yii\bootstrap\Alert::begin([
+        <? $widget = \yii\bootstrap\Alert::begin([
             'options' =>
             [
                 'class' => 'alert-danger',
                 'style' => 'margin-top: 20px; display: none;'
             ]
         ]); ?>
-        <? \yii\bootstrap\Alert::end(); ?>
-        <? \yii\bootstrap\Alert::begin([
+        <? $widget::end(); ?>
+        <? $widget = \yii\bootstrap\Alert::begin([
             'options' =>
             [
                 'class' => 'alert-success',
                 'style' => 'margin-top: 20px; display: none;'
             ]
         ]); ?>
-        <? \yii\bootstrap\Alert::end(); ?>
+        <? $widget::end(); ?>
 
 <?= \yii\helpers\Html::endTag('div'); ?>

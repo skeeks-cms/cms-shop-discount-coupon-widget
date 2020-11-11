@@ -5,17 +5,12 @@
  * @copyright 2010 SkeekS (СкикС)
  * @date 14.10.2016
  */
+
 namespace skeeks\cms\shopDiscountCoupon;
 
-use skeeks\cms\helpers\RequestResponse;
-use skeeks\cms\shop\models\ShopBuyer;
-use skeeks\cms\shop\models\ShopDiscountCoupon;
 use skeeks\cms\shop\models\shopUser;
-use skeeks\cms\shop\models\ShopOrder;
-use yii\base\Exception;
 use yii\base\Widget;
 use yii\helpers\ArrayHelper;
-use yii\helpers\Json;
 
 /**
  * Class ShopDiscountCouponWidget
@@ -31,13 +26,16 @@ class ShopDiscountCouponWidget extends Widget
     public $options = [];
     public $clientOptions = [];
 
-    public $btnSubmitWrapperOptions     = [];
-    public $btnSubmitName               = '';
-    public $shopUser                   = '';
+    public $btnSubmitName = '';
 
-    public $btnSubmitOptions            = [
-        'class' => 'btn btn-gray btn-block',
-        'type' => 'submit',
+    /**
+     * @var ShopUser
+     */
+    public $shopUser = null;
+
+    public $btnSubmitOptions = [
+        'class' => 'btn btn-secondary btn-block',
+        'type'  => 'submit',
     ];
 
 
@@ -48,19 +46,17 @@ class ShopDiscountCouponWidget extends Widget
 
         $this->options['id'] = $this->id;
 
-        if (!$this->shopUser)
-        {
-            $this->shopUser = \Yii::$app->shop->shopUser;
+        if (!$this->shopUser) {
+            $this->shopUser = \Yii::$app->shop->getCart();
             $this->shopUser->loadDefaultValues();
         }
 
         $this->clientOptions = ArrayHelper::merge($this->clientOptions, [
-            'id'        => $this->id,
-            'formid'    => $this->formId,
+            'id'     => $this->id,
+            'formid' => $this->formId,
         ]);
 
-        if (!$this->btnSubmitName)
-        {
+        if (!$this->btnSubmitName) {
             $this->btnSubmitName = \Yii::t('skeeks/shop-dicount-coupon', 'Get a discount');
         }
     }
@@ -76,7 +72,7 @@ class ShopDiscountCouponWidget extends Widget
      */
     public function getFormId()
     {
-        return $this->id . "-form";
+        return $this->id."-form";
     }
 
 
@@ -84,13 +80,12 @@ class ShopDiscountCouponWidget extends Widget
 
     static public function registerTranslations()
     {
-        if (self::$isRegisteredTranslations === false)
-        {
+        if (self::$isRegisteredTranslations === false) {
             \Yii::$app->i18n->translations['skeeks/shop-dicount-coupon'] = [
-                'class' => 'yii\i18n\PhpMessageSource',
+                'class'          => 'yii\i18n\PhpMessageSource',
                 'sourceLanguage' => 'en',
-                'basePath' => '@skeeks/cms/shopDiscountCoupon/messages',
-                'fileMap' => [
+                'basePath'       => '@skeeks/cms/shopDiscountCoupon/messages',
+                'fileMap'        => [
                     'skeeks/shop-dicount-coupon' => 'main.php',
                 ],
             ];

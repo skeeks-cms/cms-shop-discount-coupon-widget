@@ -4,53 +4,59 @@
  * @link http://skeeks.com/
  * @copyright 2010 SkeekS (СкикС)
  * @date 14.10.2016
+ *
+ * @var $this yii\web\View
+ * @var $widget \skeeks\cms\shopDiscountCoupon\ShopDiscountCouponWidget
+ * @var $discountCoupon \skeeks\cms\shop\models\ShopDiscountCoupon
  */
-/* @var $this yii\web\View */
-/* @var $widget \skeeks\cms\shopDiscountCoupon\ShopDiscountCouponWidget */
-/* @var $shopDiscountCoupon \skeeks\cms\shop\models\ShopDiscountCoupon */
-/* @var $successMessage string */
-/* @var $errorMessage string */
-$widget     = $this->context;
-$shopUser  = $widget->shopUser;
+
+$widget = $this->context;
+$shopUser = $widget->shopUser;
 $clientOptions = \yii\helpers\Json::encode($widget->clientOptions);
+
+$isShowForm = true;
 ?>
 <?= \yii\helpers\Html::beginTag('div', $widget->options); ?>
 
-    <? if ($shopUser->discountCoupons) : ?>
-        <ul>
+<? if ($shopUser->discountCoupons) : ?>
+    <ul class="list-unstyled sx-applyed-coupons">
         <? foreach ($shopUser->discountCoupons as $discountCoupon) : ?>
+            <?php if ($discountCoupon->shopDiscount->is_last) {
+                $isShowForm = false;
+            } ?>
             <li>
-                <a href='#' title='<?= $discountCoupon->description; ?> <?= $discountCoupon->shopDiscount->name; ?>'>
-                    <?= $discountCoupon->coupon; ?>
-                </a>
-                <a href='#' title='<?= \Yii::t('skeeks/shop-dicount-coupon', 'Remove coupon'); ?>' class="pull-right" onclick="sx.Shop.removeDiscountCoupon(<?= $discountCoupon->id; ?>); return false;">
-                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times-circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-times-circle fa-w-16" onclick="sx.Shop.removeBasket('868'); return false;" style="cursor: pointer; width: 12px;height: 12px;transform-origin: 0.625em 0.5625em;overflow: visible;color: gray; margin-top: -13px;">
-                                                    <g transform="translate(256 256)" class=""><g transform="translate(64, 32)  scale(1, 1)  rotate(0 0 0)" class=""><path fill="currentColor" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z" transform="translate(-256 -256)" class=""></path></g></g></svg>
-                </a>
+                <div class="d-flex flex-row">
+                    <div class="" style="width: 100%;">
+                        <a href='#' data-toggle="tooltip" title='<?= $discountCoupon->description; ?> <?= $discountCoupon->shopDiscount->name; ?>'
+                           class="sx-main-text-color g-color-primary--hover g-text-underline--none--hover">
+                            <?= $discountCoupon->coupon; ?>
+                        </a>
+                    </div>
+                    <a href='#' style="font-size: 11px;" data-toggle="tooltip" title='<?= \Yii::t('skeeks/shop-dicount-coupon', 'Remove coupon'); ?>'
+                       class="sx-btn-remove-coupon pull-right g-color-primary--hover g-text-underline--none--hover my-auto sx-color-silver"
+                       onclick="sx.Shop.removeDiscountCoupon(<?= $discountCoupon->id; ?>); return false;">
+                        <i class="hs-icon hs-icon-close"></i>
+                    </a>
+                </div>
             </li>
         <? endforeach; ?>
-        </ul>
-    <? endif; ?>
-    <p><?= \Yii::t('skeeks/shop-dicount-coupon', 'Please enter your coupon'); ?></p>
+    </ul>
+<? endif; ?>
 
-    <form id="<?= $widget->formId; ?>" class="nomargin" method="post" data-pjax="false">
+    <form id="<?= $widget->formId; ?>" class="sx-discount-coupon-form" method="post" data-pjax="false" <?php echo $isShowForm ?: "style='display: none;'"; ?>>
 
-    <? $this->registerJs(<<<JS
+        <? $this->registerJs(<<<JS
 (function(sx, $, _)
 {
     sx.createNamespace('classes.shop', sx);
 
     sx.classes.shop.ShopDiscountCouponWidget = sx.classes.Component.extend({
 
-        _init: function()
-        {},
-
         /**
         *
         * @returns {*|HTMLElement}
         */
-        getJWrapper: function()
-        {
+        getJWrapper: function() {
             return $('#' + this.get('id'))
         },
 
@@ -69,6 +75,8 @@ $clientOptions = \yii\helpers\Json::encode($widget->clientOptions);
 
                 var AjaxHandler = new sx.classes.AjaxHandlerStandartRespose(ajaxQuery, {
                     'enableBlocker' : true,
+                    'allowResponseSuccessMessage' : false,
+                    'allowResponseErrorMessage' : false,
                     'blockerSelector' : self.getJWrapper()
                 });
 
@@ -93,47 +101,45 @@ $clientOptions = \yii\helpers\Json::encode($widget->clientOptions);
 
                 return false;
             });
-        },
-
-        _onWindowReady: function()
-        {
-
         }
     });
 
     new sx.classes.shop.ShopDiscountCouponWidget({$clientOptions});
 })(sx, sx.$, sx._);
 JS
-    ); ?>
+        ); ?>
 
-        <?= \yii\helpers\Html::textInput('coupon_code', null, [
-            'class' => 'form-control text-center margin-bottom-10',
-            'placeholder' => \Yii::t('skeeks/shop-dicount-coupon', 'Coupon code'),
-            'required' => 'required',
-        ]); ?>
-
-        <?= \yii\helpers\Html::beginTag('div', $widget->btnSubmitWrapperOptions); ?>
-            <?=
+        <div class="input-group">
+            <?= \yii\helpers\Html::textInput('coupon_code', null, [
+                'class'        => 'form-control',
+                'placeholder'  => \Yii::t('skeeks/shop-dicount-coupon', 'Coupon code'),
+                'autocomplete' => "off",
+                'required'     => 'required',
+            ]); ?>
+            <div class="input-group-append">
+                <?=
                 \yii\helpers\Html::button($widget->btnSubmitName, $widget->btnSubmitOptions)
-            ?>
-        <?= \yii\helpers\Html::endTag('div'); ?>
+                ?>
+            </div>
+        </div>
+
     </form>
 
-        <? $widget = \yii\bootstrap\Alert::begin([
-            'options' =>
-            [
-                'class' => 'alert-danger',
-                'style' => 'margin-top: 20px; display: none;'
-            ]
-        ]); ?>
-        <? $widget::end(); ?>
-        <? $widget = \yii\bootstrap\Alert::begin([
-            'options' =>
-            [
-                'class' => 'alert-success',
-                'style' => 'margin-top: 20px; display: none;'
-            ]
-        ]); ?>
-        <? $widget::end(); ?>
+<? $widget = \yii\bootstrap\Alert::begin([
+    'options' =>
+        [
+            'class' => 'alert-danger',
+            'style' => 'margin-top: 20px; display: none;',
+        ],
+]); ?>
+<? $widget::end(); ?>
+<? $widget = \yii\bootstrap\Alert::begin([
+    'options' =>
+        [
+            'class' => 'alert-success',
+            'style' => 'margin-top: 20px; display: none;',
+        ],
+]); ?>
+<? $widget::end(); ?>
 
 <?= \yii\helpers\Html::endTag('div'); ?>

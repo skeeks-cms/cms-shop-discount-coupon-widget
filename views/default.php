@@ -110,12 +110,12 @@ JS
         ); ?>
 
         <div class="input-group">
-            <?= \yii\helpers\Html::textInput('coupon_code', null, [
+            <?= \yii\helpers\Html::textInput('coupon_code', null, \yii\helpers\ArrayHelper::merge([
                 'class'        => 'form-control',
                 'placeholder'  => \Yii::t('skeeks/shop-dicount-coupon', 'Coupon code'),
                 'autocomplete' => "off",
                 'required'     => 'required',
-            ]); ?>
+            ], $widget->couponInputOptions)); ?>
             <div class="input-group-append">
                 <?=
                 \yii\helpers\Html::button($widget->btnSubmitName, $widget->btnSubmitOptions)

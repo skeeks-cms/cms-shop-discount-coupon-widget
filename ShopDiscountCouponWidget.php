@@ -27,6 +27,12 @@ class ShopDiscountCouponWidget extends Widget
     public $clientOptions = [];
 
     public $btnSubmitName = '';
+    /**
+     * @var array 
+     */
+    public $couponInputOptions = [
+        
+    ];
 
     /**
      * @var ShopUser

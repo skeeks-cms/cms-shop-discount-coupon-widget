@@ -18,6 +18,13 @@ $isShowForm = true;
 ?>
 <?= \yii\helpers\Html::beginTag('div', $widget->options); ?>
 
+<?php
+$shopDiscounts = \skeeks\cms\shop\models\ShopDiscount::find()->cmsSite()->select(['id']);
+
+if(\skeeks\cms\shop\models\ShopDiscountCoupon::find()->andWhere([
+    'shop_discount_id' => $shopDiscounts
+])->active()->exists()) : ?>
+
 <? if ($shopUser->discountCoupons) : ?>
     <ul class="list-unstyled sx-applyed-coupons">
         <? foreach ($shopUser->discountCoupons as $discountCoupon) : ?>
@@ -34,7 +41,7 @@ $isShowForm = true;
                     </div>
                     <a href='#' style="font-size: 11px;" data-toggle="tooltip" title='<?= \Yii::t('skeeks/shop-dicount-coupon', 'Remove coupon'); ?>'
                        class="sx-btn-remove-coupon pull-right g-color-primary--hover g-text-underline--none--hover my-auto sx-color-silver"
-                       onclick="sx.Shop.removeDiscountCoupon(<?= $discountCoupon->id; ?>); return false;">
+                       data-id="<?= $discountCoupon->id; ?>">
                         <i class="hs-icon hs-icon-close"></i>
                     </a>
                 </div>
@@ -88,6 +95,8 @@ $isShowForm = true;
                     {
                         sx.Shop.trigger('change');
                     }, 800);
+                    
+                    window.location.reload();
 
                 });
 
@@ -97,8 +106,22 @@ $isShowForm = true;
                     self.JMessageError.empty().show().append(response.message);
                 });
 
-                ajaxQuery.execute();
+                ajaxQuery.execxute();
 
+                return false;
+            });
+            
+            $(".sx-btn-remove-coupon").on("click", function() {
+                
+                var id = $(this).data("id"); 
+                
+                var ajaxQuery = sx.Shop.createAjaxRemoveDiscountCoupon(id);
+                ajaxQuery.on("success", function () {
+                    window.location.reload();
+                    return false;
+                });
+                ajaxQuery.execute();
+                
                 return false;
             });
         }
@@ -141,5 +164,7 @@ JS
         ],
 ]); ?>
 <? $widget::end(); ?>
+
+<?php endif; ?>
 
 <?= \yii\helpers\Html::endTag('div'); ?>

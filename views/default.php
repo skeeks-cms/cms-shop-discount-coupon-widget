@@ -25,32 +25,32 @@ if(\skeeks\cms\shop\models\ShopDiscountCoupon::find()->andWhere([
     'shop_discount_id' => $shopDiscounts
 ])->active()->exists()) : ?>
 
-<? if ($shopUser->discountCoupons) : ?>
-    <ul class="list-unstyled sx-applyed-coupons">
-        <? foreach ($shopUser->discountCoupons as $discountCoupon) : ?>
-            <?php if ($discountCoupon->shopDiscount->is_last) {
-                $isShowForm = false;
-            } ?>
-            <li>
-                <div class="d-flex flex-row">
-                    <div class="" style="width: 100%;">
-                        <a href='#' data-toggle="tooltip" title='<?= $discountCoupon->description; ?> <?= $discountCoupon->shopDiscount->name; ?>'
-                           class="sx-main-text-color g-color-primary--hover g-text-underline--none--hover">
-                            <?= $discountCoupon->coupon; ?>
+    <? if ($shopUser->discountCoupons) : ?>
+        <ul class="list-unstyled sx-applyed-coupons">
+            <? foreach ($shopUser->discountCoupons as $discountCoupon) : ?>
+                <?php if ($discountCoupon->shopDiscount->is_last) {
+                    $isShowForm = false;
+                } ?>
+                <li>
+                    <div class="d-flex flex-row">
+                        <div class="" style="width: 100%;">
+                            <a href='#' data-toggle="tooltip" title='<?= $discountCoupon->description; ?> <?= $discountCoupon->shopDiscount->name; ?>'
+                               class="sx-main-text-color g-color-primary--hover g-text-underline--none--hover">
+                                <?= $discountCoupon->coupon; ?>
+                            </a>
+                        </div>
+                        <a href='#' style="font-size: 11px;" data-toggle="tooltip" title='<?= \Yii::t('skeeks/shop-dicount-coupon', 'Remove coupon'); ?>'
+                           class="sx-btn-remove-coupon pull-right g-color-primary--hover g-text-underline--none--hover my-auto sx-color-silver"
+                           data-id="<?= $discountCoupon->id; ?>">
+                            <i class="hs-icon hs-icon-close"></i>
                         </a>
                     </div>
-                    <a href='#' style="font-size: 11px;" data-toggle="tooltip" title='<?= \Yii::t('skeeks/shop-dicount-coupon', 'Remove coupon'); ?>'
-                       class="sx-btn-remove-coupon pull-right g-color-primary--hover g-text-underline--none--hover my-auto sx-color-silver"
-                       data-id="<?= $discountCoupon->id; ?>">
-                        <i class="hs-icon hs-icon-close"></i>
-                    </a>
-                </div>
-            </li>
-        <? endforeach; ?>
-    </ul>
-<? endif; ?>
+                </li>
+            <? endforeach; ?>
+        </ul>
+    <? endif; ?>
 
-    <form id="<?= $widget->formId; ?>" class="sx-discount-coupon-form" method="post" data-pjax="false" <?php echo $isShowForm ?: "style='display: none;'"; ?>>
+    <form id="<?= $widget->formId; ?>" class="sx-discount-coupon-form" method="post" <?php echo $isShowForm ?: "style='display: none;'"; ?>>
 
         <? $this->registerJs(<<<JS
 (function(sx, $, _)
@@ -71,12 +71,15 @@ if(\skeeks\cms\shop\models\ShopDiscountCoupon::find()->andWhere([
         {
             var self = this;
             this.JForm = $('form', this.getJWrapper());
+            
             this.JFormName = $('[name=coupon_code]', this.JForm);
             this.JMessageError = $('.alert-danger', this.getJWrapper());
             this.JMessageSuccess = $('.alert-success', this.getJWrapper());
 
-            this.JForm.on('submit', function()
+            this.JForm.on('submit', function(event)
             {
+                event.preventDefault();
+
                 var ajaxQuery = sx.Shop.createAjaxAddDiscountCoupon(self.JFormName.val());
                 ajaxQuery.unbind('success');
 
@@ -106,7 +109,7 @@ if(\skeeks\cms\shop\models\ShopDiscountCoupon::find()->andWhere([
                     self.JMessageError.empty().show().append(response.message);
                 });
 
-                ajaxQuery.execxute();
+                ajaxQuery.execute();
 
                 return false;
             });
